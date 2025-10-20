@@ -124,8 +124,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="container my-4">
         <div class="p-3 mb-4 bg-primary text-white rounded">
-            <h3 class="mb-0">Tugas CryptoEngine</h3>
-            <small>Complete Encryption/Decryption Suite</small>
+            <h3 class="mb-0">Tugas CryptoEngine (PHP)</h3>
+            <small>Complete Encryption/Decryption Suite (Hypertext Preprocessor Version)</small>
         </div>
 
         <?php if (!empty($errors)): ?>

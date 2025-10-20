@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🔐 CryptoEngine (JavaScript)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+  <script src="crypto-engine.js"></script>
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+  <div class="text-center mb-4">
+    <h3 class="text-primary fw-bold">🔒 CryptoEngine (JavaScript)</h3>
+    <p class="text-muted">Complete Encryption/Decryption Suite — Text & File Encryption with Time + Size Info</p>
+  </div>
+
+  <ul class="nav nav-tabs mb-3" id="cryptoTabs">
+    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#encrypt">Encrypt</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#decrypt">Decrypt</a></li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- ENCRYPT TAB -->
+    <div class="tab-pane fade show active" id="encrypt">
+      <div class="row">
+        <!-- Encrypt Text -->
+        <div class="col-md-6">
+          <div class="card border-primary mb-4">
+            <div class="card-header bg-primary text-white">Encrypt Text</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label>Plaintext</label>
+                <textarea id="plaintext" class="form-control" rows="4" placeholder="Enter text..."></textarea>
+              </div>
+              <div class="mb-3">
+                <label>Method</label>
+                <select id="encryptMethod" class="form-select">
+                  <optgroup label="Encoding (Not Encryption)">
+                    <option value="base64">Base64</option>
+                    <option value="hex">Hexadecimal</option>
+                  </optgroup>
+                  <optgroup label="Hashing (One-way)">
+                    <option value="sha256">SHA-256</option>
+                    <option value="sha512">SHA-512</option>
+                    <option value="sha3-256">SHA3-256</option>
+                  </optgroup>
+                  <optgroup label="Symmetric Encryption">
+                    <option value="aes-gcm" selected>AES-256-GCM (Recommended)</option>
+                    <option value="aes-cbc">AES-256-CBC</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label>Secret Key</label>
+                <input id="secretKey" type="text" class="form-control" placeholder="Enter secret key...">
+              </div>
+              <button class="btn btn-primary w-100" onclick="encryptText()">🔐 Encrypt Text</button>
+
+              <div class="mt-3">
+                <label>Result:</label>
+                <textarea id="encryptResult" class="form-control" rows="4" readonly></textarea>
+                <small class="text-muted d-block mt-2" id="encryptInfo"></small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Encrypt File -->
+        <div class="col-md-6">
+          <div class="card border-primary mb-4">
+            <div class="card-header bg-primary text-white">Encrypt File</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label>Choose File</label>
+                <input id="fileInput" type="file" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label>Method</label>
+                <select id="fileMethod" class="form-select">
+                  <option value="aes-gcm" selected>AES-256-GCM (Recommended)</option>
+                  <option value="aes-cbc">AES-256-CBC</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label>Secret Key</label>
+                <input id="fileKey" type="text" class="form-control" placeholder="Enter secret key...">
+              </div>
+              <button class="btn btn-primary w-100" onclick="encryptFile()">🔒 Encrypt File</button>
+              <small class="text-muted d-block mt-3" id="fileInfo"></small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DECRYPT TAB -->
+    <div class="tab-pane fade" id="decrypt">
+      <div class="row">
+        <!-- Decrypt Text -->
+        <div class="col-md-6">
+          <div class="card border-success mb-4">
+            <div class="card-header bg-success text-white">Decrypt Text</div>
+            <div class="card-body">
+              <textarea id="ciphertext" class="form-control" rows="4" placeholder="Paste encrypted text..."></textarea>
+              <select id="decryptMethod" class="form-select mt-2">
+                <option value="aes-gcm" selected>AES-256-GCM</option>
+                <option value="aes-cbc">AES-256-CBC</option>
+              </select>
+              <input id="decryptKey" type="text" class="form-control mt-2" placeholder="Enter secret key...">
+              <button class="btn btn-success w-100 mt-3" onclick="decryptText()">🔓 Decrypt Text</button>
+              <textarea id="decryptResult" class="form-control mt-3" rows="4" readonly></textarea>
+              <small class="text-muted d-block mt-2" id="decryptInfo"></small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Decrypt File -->
+        <div class="col-md-6">
+          <div class="card border-success mb-4">
+            <div class="card-header bg-success text-white">Decrypt File</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label>Select Encrypted File (.enc)</label>
+                <input id="encFileInput" type="file" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label>Secret Key</label>
+                <input id="decFileKey" type="text" class="form-control" placeholder="Enter secret key...">
+              </div>
+              <button class="btn btn-success w-100" onclick="decryptFile()">🔓 Decrypt File</button>
+              <small class="text-muted d-block mt-3" id="decFileInfo"></small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ======================
+// 🧠 TEXT ENCRYPT / DECRYPT
+// ======================
+async function encryptText() {
+  const text = document.getElementById('plaintext').value;
+  const key = document.getElementById('secretKey').value;
+  const method = document.getElementById('encryptMethod').value;
+
+  const start = performance.now();
+  const result = await CryptoEngine.encrypt(text, method, key);
+  const end = performance.now();
+
+  const time = ((end - start) / 1000).toFixed(4);
+  const size = new Blob([result]).size;
+
+  document.getElementById('encryptResult').value = result;
+  document.getElementById('encryptInfo').innerText = `⏱ ${time}s | 📦 ${size} bytes`;
+}
+
+async function decryptText() {
+  const ciphertext = document.getElementById('ciphertext').value;
+  const key = document.getElementById('decryptKey').value;
+  const method = document.getElementById('decryptMethod').value;
+
+  const start = performance.now();
+  const result = await CryptoEngine.decrypt(ciphertext, method, key);
+  const end = performance.now();
+
+  const time = ((end - start) / 1000).toFixed(4);
+  const size = new Blob([ciphertext]).size;
+
+  document.getElementById('decryptResult').value = result;
+  document.getElementById('decryptInfo').innerText = `⏱ ${time}s | 📦 ${size} bytes`;
+}
+
+// ======================
+// 🧠 FILE ENCRYPT / DECRYPT
+// ======================
+async function encryptFile() {
+  const file = document.getElementById('fileInput').files[0];
+  const key = document.getElementById('fileKey').value;
+  const method = document.getElementById('fileMethod').value;
+
+  if (!file) return alert("Select a file first!");
+
+  const start = performance.now();
+  const encrypted = await CryptoEngine.encryptFile(file, method, key);
+  const end = performance.now();
+
+  const time = ((end - start) / 1000).toFixed(4);
+  const size = encrypted.byteLength;
+
+  document.getElementById('fileInfo').innerText = `⏱ ${time}s | 📦 ${size} bytes`;
+
+  const blob = new Blob([encrypted]);
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = file.name + ".enc";
+  link.click();
+}
+
+async function decryptFile() {
+  const file = document.getElementById('encFileInput').files[0];
+  const key = document.getElementById('decFileKey').value;
+  if (!file) return alert("Select a file first!");
+
+  const start = performance.now();
+  const encryptedBuffer = await file.arrayBuffer();
+  const decryptedBlob = await CryptoEngine.decryptFile(encryptedBuffer, key);
+  const end = performance.now();
+
+  const time = ((end - start) / 1000).toFixed(4);
+  const size = decryptedBlob.size;
+  document.getElementById('decFileInfo').innerText = `⏱ ${time}s | 📦 ${size} bytes`;
+
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(decryptedBlob);
+  link.download = file.name.replace(".enc", "_decrypted");
+  link.click();
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
